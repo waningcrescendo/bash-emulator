@@ -1,8 +1,8 @@
 var commands = {
   cat: require('./cat'),
-  grep: require('./grep'),
   cd: require('./cd'),
   cp: require('./cp'),
+  grep: require('./grep'),
   history: require('./history'),
   ls: require('./ls'),
   mkdir: require('./mkdir'),
@@ -10,6 +10,7 @@ var commands = {
   pwd: require('./pwd'),
   rm: require('./rm'),
   rmdir: require('./rmdir'),
+  sort: require('./sort'),
   touch: require('./touch')
 }
 
