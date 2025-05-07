@@ -1,4 +1,4 @@
-var lineNumber = require('../utils/lineNumber')
+var addLineNumber = require('../utils/lineNumber').addLineNumber
 
 function grep (env, args) {
   // Ignore command name
@@ -66,7 +66,7 @@ function grep (env, args) {
         if (!countOnly) {
           var out = line
           if (showNumbers) {
-            out = lineNumber(6, idx + 1, out)
+            out = addLineNumber(6, idx + 1, out)
           }
           if (prefix) {
             out = prefix + ':' + out
