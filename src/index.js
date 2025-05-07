@@ -30,12 +30,16 @@ function bashEmulator (initialState) {
     state: state,
 
     run: function (input) {
+      console.log('emulator is running: ', input)
       state.history.push(input)
 
       var argsList = input.split('|').map(function (pipe) {
-        var args = pipe.trim().split(' ').filter(function (s) {
-          return s
-        })
+        var args = pipe
+          .trim()
+          .split(' ')
+          .filter(function (s) {
+            return s
+          })
         return args
       })
 
@@ -47,7 +51,11 @@ function bashEmulator (initialState) {
         return Promise.reject('syntax error: unexpected end of file')
       }
 
-      if (argsList.find(function (a) { return !a.length })) {
+      if (
+        argsList.find(function (a) {
+          return !a.length
+        })
+      ) {
         return Promise.reject("syntax error near unexpected token `|'")
       }
 
@@ -56,9 +64,13 @@ function bashEmulator (initialState) {
         return !commands[cmd]
       })
       if (nonExistent.length) {
-        return Promise.reject(nonExistent.map(function (args) {
-          return args[0] + ': command not found'
-        }).join('\n'))
+        return Promise.reject(
+          nonExistent
+            .map(function (args) {
+              return args[0] + ': command not found'
+            })
+            .join('\n')
+        )
       }
 
       var result = ''
@@ -66,38 +78,41 @@ function bashEmulator (initialState) {
       return new Promise(function (resolve, reject) {
         var pipes = argsList.map(function (args, idx) {
           var isLast = idx === argsList.length - 1
-          return commands[args[0]]({
-            output: function (str) {
-              if (isLast) {
-                result += str
-                return
-              }
-              var nextInput = pipes[idx + 1] && pipes[idx + 1].input
-              if (nextInput) {
-                nextInput(str)
-              }
-            },
-            // NOTE: For now we just redirect stderr to stdout
-            error: function (str) {
-              result += str
-            },
-            // NOTE: For now we don't use specific error codes
-            exit: function (code) {
-              if (isLast) {
-                if (code) {
-                  reject(result)
-                } else {
-                  resolve(result)
+          return commands[args[0]](
+            {
+              output: function (str) {
+                if (isLast) {
+                  result += str
+                  return
                 }
-                return
-              }
-              var nextClose = pipes[idx + 1] && pipes[idx + 1].close
-              if (nextClose) {
-                nextClose()
-              }
+                var nextInput = pipes[idx + 1] && pipes[idx + 1].input
+                if (nextInput) {
+                  nextInput(str)
+                }
+              },
+              // NOTE: For now we just redirect stderr to stdout
+              error: function (str) {
+                result += str
+              },
+              // NOTE: For now we don't use specific error codes
+              exit: function (code) {
+                if (isLast) {
+                  if (code) {
+                    reject(result)
+                  } else {
+                    resolve(result)
+                  }
+                  return
+                }
+                var nextClose = pipes[idx + 1] && pipes[idx + 1].close
+                if (nextClose) {
+                  nextClose()
+                }
+              },
+              system: emulator
             },
-            system: emulator
-          }, args)
+            args
+          )
         })
       })
     },
@@ -129,7 +144,9 @@ function bashEmulator (initialState) {
     readDir: function (path) {
       var dir = getPath(path)
       if (!state.fileSystem[dir]) {
-        return Promise.reject('cannot access ‘' + path + '’: No such file or directory')
+        return Promise.reject(
+          'cannot access ‘' + path + '’: No such file or directory'
+        )
       }
       var listing = Object.keys(state.fileSystem)
         .filter(function (path) {
@@ -160,12 +177,18 @@ function bashEmulator (initialState) {
     },
 
     createDir: function (path) {
-      return emulator.stat(path)
-        .then(function () {
-          return Promise.reject('cannot create directory \'' + path + '\': File exists')
-        }, function () {
-          return parentExists(path)
-        })
+      return emulator
+        .stat(path)
+        .then(
+          function () {
+            return Promise.reject(
+              "cannot create directory '" + path + "': File exists"
+            )
+          },
+          function () {
+            return parentExists(path)
+          }
+        )
         .then(function () {
           var dirPath = getPath(path)
           state.fileSystem[dirPath] = {
@@ -186,28 +209,33 @@ function bashEmulator (initialState) {
 
       return parentExists(path).then(function () {
         var filePath = getPath(path)
-        return emulator.stat(path).then(function (stats) {
-          if (stats.type !== 'file') {
-            return Promise.reject(filePath + ': Is a folder')
+        return emulator.stat(path).then(
+          function (stats) {
+            if (stats.type !== 'file') {
+              return Promise.reject(filePath + ': Is a folder')
+            }
+            var oldContent = state.fileSystem[filePath].content
+            state.fileSystem[filePath].content = oldContent + content
+            state.fileSystem[filePath].modified = Date.now()
+          },
+          function () {
+            // file doesnt exist: write
+            state.fileSystem[filePath] = {
+              type: 'file',
+              modified: Date.now(),
+              content: content
+            }
           }
-          var oldContent = state.fileSystem[filePath].content
-          state.fileSystem[filePath].content = oldContent + content
-          state.fileSystem[filePath].modified = Date.now()
-        }, function () {
-          // file doesnt exist: write
-          state.fileSystem[filePath] = {
-            type: 'file',
-            modified: Date.now(),
-            content: content
-          }
-        })
+        )
       })
     },
 
     remove: function (path) {
       var filePath = getPath(path)
       if (!state.fileSystem[filePath]) {
-        return Promise.reject('cannot remove ‘' + path + '’: No such file or directory')
+        return Promise.reject(
+          'cannot remove ‘' + path + '’: No such file or directory'
+        )
       }
       Object.keys(state.fileSystem).forEach(function (key) {
         if (key.startsWith(filePath)) {
@@ -246,9 +274,11 @@ function bashEmulator (initialState) {
         completion.input = input
         completion.index = 0
         completion.historySize = state.history.length
-        completion.list = state.history.filter(function (item) {
-          return item.startsWith(input)
-        }).reverse()
+        completion.list = state.history
+          .filter(function (item) {
+            return item.startsWith(input)
+          })
+          .reverse()
       } else if (completion.index < completion.list.length - 1) {
         completion.index++
       } else {

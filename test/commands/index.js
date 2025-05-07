@@ -1,4 +1,5 @@
 require('./cat')
+require('./grep')
 require('./cd')
 require('./cp')
 require('./history')
