@@ -2,9 +2,9 @@ name: Audit & Test
 
 on:
   push:
-    branches: [gh-pages]
+    branches: [main]
   pull_request:
-    branches: [gh-pages]
+    branches: [main]
 
 jobs:
   security-audit:
