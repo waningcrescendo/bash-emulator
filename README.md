@@ -2,12 +2,16 @@
 
 [![Build Status](https://travis-ci.org/trybash/bash-emulator.svg?branch=gh-pages)](https://travis-ci.org/trybash/bash-emulator) [![on npm](https://img.shields.io/npm/v/bash-emulator.svg)](https://www.npmjs.com/package/bash-emulator)
 
+## Credits
+
+This project is based on the open-source project [trybash](https://github.com/trybash), licensed under the MIT License.
+
 This module can help you if you like to emulate a bash shell in plain Javascript.
 
 It might be useful for education purposes or even to ease the interaction with a back-end system.
 
 `bash-emulator` implements an environment for bash commands to run in and it also includes some default commands.
-The system it provides can be thought of like the *syscalls* of an operating system.
+The system it provides can be thought of like the _syscalls_ of an operating system.
 Shell commands are programs running on top of this low-level primitives.
 
 The system doesn't handle any UI interaction but provides hooks to communicate with other systems.
@@ -17,13 +21,12 @@ Also note that even though we try to create a realistic bash environment, this s
 
 If you are looking for a real terminal to run in your browser, have a look at [xterm.js](https://github.com/xtermjs/xterm.js).
 
-
 ## Usage
 
 The module can be used in Node.js or in the browser.
 Get it with:
 
-``` js
+```js
 npm install --save bash-emulator
 ```
 
@@ -34,8 +37,9 @@ Please use a tool like [webpack](https://webpack.github.io/) or [browserify](htt
 for bundling and minification in your own workflow.
 
 `bashEmulator(state) -> emulator`
-  - `state` an optional object to initialize the state. For shape [see below](#the-state-object).
-  - Returns an `emulator` object
+
+- `state` an optional object to initialize the state. For shape [see below](#the-state-object).
+- Returns an `emulator` object
 
 ### `emulator`
 
@@ -87,7 +91,6 @@ for bundling and minification in your own workflow.
 - `state`
   - [See below](#the-state-object)
 
-
 ### Built-in features, commands and flags
 
 - pipes `|`
@@ -103,10 +106,9 @@ for bundling and minification in your own workflow.
 - `rm -r -R`
 - `rmdir`
 
-
 ### The `state` object
 
-__It's not recommended to access the state directly. Use the above defined helper methods instead.__
+**It's not recommended to access the state directly. Use the above defined helper methods instead.**
 
 - `history` an array of strings containing previous commands
 - `user` name of the current user (defaults to `"user"`)
@@ -117,18 +119,16 @@ __It's not recommended to access the state directly. Use the above defined helpe
   - Files also have a `content` property.
   - Default file system contains only directories for `/home/user`
 
-
 ### Storing state in `localStorage`
 
-``` js
-var state = JSON.parse(localStorage.bashEmulator || '{}')
-var emulator = bashEmulator(state)
-function saveState () {
-  localStorage.bashEmulator = JSON.stringify(emulator.state)
+```js
+var state = JSON.parse(localStorage.bashEmulator || "{}");
+var emulator = bashEmulator(state);
+function saveState() {
+  localStorage.bashEmulator = JSON.stringify(emulator.state);
 }
-emulator.run().then(saveState)
+emulator.run().then(saveState);
 ```
-
 
 ### Writing your own commands
 
@@ -137,9 +137,9 @@ to your liking.
 
 To add a new command you need to implement the following API:
 
-``` js
-var emulator = bashEmulator()
-emulator.commands.myCommand = function (env, args) {}
+```js
+var emulator = bashEmulator();
+emulator.commands.myCommand = function (env, args) {};
 ```
 
 - `env` object with:
@@ -152,13 +152,11 @@ emulator.commands.myCommand = function (env, args) {}
 - Optionally return object to register handlers for events:
   `{ input: fn, close: fn }`
 
-
 ### Using a custom file system
 
 You can ignore the simple, built-in file system and overwrite all
 required methods of your emulator instance with custom implementations.
 The API of the methods are designed to work with asynchronous implementations as well.
-
 
 ## Development
 
@@ -166,7 +164,6 @@ The API of the methods are designed to work with asynchronous implementations as
 - Setup project using `npm install`
 - Make sure tests are passing using `npm test`
 - Build the `bash-emulator.min.js` file with `npm run build`
-
 
 ## Contribution
 
@@ -181,15 +178,12 @@ Just make sure the tests are passing (`npm test`) and send a [Pull Request](http
 If you are looking for a new feature to implement,
 make sure to have a look at our [roadmap](https://github.com/trybash/bash-emulator/labels/enhancement).
 
-
 ## Browser Support
 
 To support IE, please use a promise polyfill.
 For example:
 https://github.com/stefanpenner/es6-promise
 
-
 ## LICENSE
 
 [MIT](/LICENSE)
-
