@@ -41,16 +41,15 @@ function sort (env, args) {
   if (args.length === 0) {
     console.log('NO FILE')
     var buffer = []
-    return {
+    return Promise.resolve({
       input: function (chunk) {
         buffer = buffer.concat(chunk.split('\n'))
       },
       close: function () {
         processLines(buffer)
-        console.log('exit ', exitCode)
         env.exit(exitCode)
       }
-    }
+    })
   }
 
   Promise.all(args.map(function (path) {

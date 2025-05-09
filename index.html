@@ -70,6 +70,7 @@
       var input = document.getElementById('input')
       var output = document.getElementById('output')
 
+      var currentInteractive=false
       var emulator = bashEmulator({
         workingDirectory: '/',
         fileSystem: {
@@ -123,9 +124,21 @@
       }
 
       function run (cmd) {
-        log('$ ' + cmd)
-        return emulator.run(cmd).then(log, error)
+    log('$ ' + cmd)
+    return emulator.run(cmd).then(function (resultOrStream) {
+      console.log('Result or Stream:', resultOrStream);
+      if (
+        typeof resultOrStream === 'object' &&
+        resultOrStream.input &&
+        resultOrStream.close
+      ) {
+        currentInteractive = resultOrStream
+        log('[Entrée standard active. Tapez du texte, puis Ctrl+D pour terminer.]')
+      } else {
+        log(resultOrStream)
       }
+    }).catch(error)
+  }
 
       var completeFunctions = {}
       completeFunctions[UP] = emulator.completeUp
@@ -147,25 +160,40 @@
       }
 
       input.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.which === 68) { 
+          console.log("(Ctrl+D) pressed");          
+          e.preventDefault(); 
+          if(currentInteractive){
+            currentInteractive.close()
+            currentInteractive=null
+          }
+          return
+        }
+
         if (e.altKey || e.metaKey || e.shiftKey || e.ctrlKey) {
           return
         }
         if (e.which === UP || e.which === DOWN) {
+          console.log("up orr down")
           e.preventDefault()
           complete(e.which)
         }
       })
 
       input.addEventListener('keyup', function (e) {
-        if (e.which !== ENTER) {
-          return
+        if (e.which !== ENTER) return
+        const val = input.value
+        input.value = ''
+        console.log("current interactive",currentInteractive)
+        if (currentInteractive) {
+          currentInteractive.input(val + '\n')
+        } else {
+          run(val).then(function () {
+            document.body.scrollTop = 10e6
+          })
         }
-        run(input.value).then(function () {
-          input.value = ''
-          document.body.scrollTop = 10e6
-        })
       })
-
+        
       document.body.addEventListener('click', function () {
         // Prevent when user is selecting text
         if (!window.getSelection().isCollapsed) {
