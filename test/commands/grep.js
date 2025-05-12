@@ -2,7 +2,7 @@ var test = require('tape')
 var bashEmulator = require('../../src')
 
 test('grep', function (t) {
-  t.plan(15)
+  t.plan(16)
 
   var emulator = bashEmulator({
     workingDirectory: '/',
@@ -43,6 +43,11 @@ test('grep', function (t) {
   emulator.run('grep').then(null, function (err) {
     var res = 'need pattern for grep'
     t.equal(err, res, 'grep fails with no pattern')
+  })
+
+  emulator.run('grep -x 3.txt').then(null, function (err) {
+    var res = 'grep: invalid option -x\n'
+    t.equal(err, res, 'grep fails with unknown option')
   })
 
   emulator.run('grep "^f" nofile.txt').then(null, function (err) {
