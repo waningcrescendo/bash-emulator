@@ -2,7 +2,7 @@ var test = require('tape')
 var bashEmulator = require('../../src')
 
 test('sort', function (t) {
-  t.plan(8)
+  t.plan(9)
 
   var emulator = bashEmulator({
     workingDirectory: '/',
@@ -16,6 +16,20 @@ test('sort', function (t) {
         type: 'file',
         modified: Date.now(),
         content: 'pomme\npoire\npomme\nfraise\nkiwi\nfraise\npoire'
+      },
+      '/salary.txt': {
+        type: 'file',
+        modified: Date.now(),
+        content: `alice 7200
+bob 4800
+claire 9100
+daniel 3150
+eve 6700
+frank 10000
+george 9999
+hannah 5500
+irene 4300
+jack 7800`
       },
       '/empty.txt': {
         type: 'file',
@@ -53,6 +67,21 @@ test('sort', function (t) {
   emulator.run('sort -ru duplicates.txt').then(function (output) {
     var res = 'pomme\npoire\nkiwi\nfraise\n'
     t.equal(output, res, 'sort with file input (remove duplicate & reverse order)')
+  })
+
+  emulator.run('sort -k2 noms_salaries.txt').then(function (output) {
+    var res = `daniel 3150
+alice 7200
+bob 4800
+irene 4300
+hannah 5500
+eve 6700
+jack 7800
+george 9999
+claire 9100
+frank 10000
+`
+    t.equal(output, res, 'sort with file input (sort by second column - salaries)')
   })
 
   emulator.run('sort -r nofile.txt').then(null, function (err) {

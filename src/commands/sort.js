@@ -5,6 +5,9 @@ function sort (env, args) {
   var exitCode = 0
   var alphabeticalOrder = true
   var removeDuplicates = false
+  var numericSort = false
+  var columnIndex = 0
+
    // flag extraction
   var flags = []
   while (args[0] && args[0].startsWith('-')) {
@@ -22,6 +25,13 @@ function sort (env, args) {
       console.log('alphabeticalOrder is false')
     } else if (f === '-u') {
       removeDuplicates = true
+    } else if (f === '-n') {
+      numericSort = true
+    } else if (f.startsWith('-k')) {
+      const colArg = f.slice(2)
+      if (colArg) {
+        columnIndex = parseInt(colArg) - 1
+      }
     } else {
       exitCode = 1
       env.error('sort: invalid option ' + f + '\n')
@@ -30,10 +40,28 @@ function sort (env, args) {
     }
   })
 
+  function extractNumberFromColumn (line, columnIndex) {
+    const columns = line.split(/\s+/)
+    if (columns[columnIndex]) {
+      // eslint-disable-next-line no-useless-escape
+      const match = columns[columnIndex].match(/[\d\.\-]+/)
+      return match ? parseFloat(match[0]) : NaN
+    }
+    return NaN
+  }
+
   function processLines (lines) {
     lines = lines.filter(line => line.trim() !== '')
 
-    var sortedLines = lines.sort()
+    var sortedLines = lines.sort(function (a, b) {
+      if (numericSort) {
+        const numA = extractNumberFromColumn(a, columnIndex)
+        const numB = extractNumberFromColumn(b, columnIndex)
+        return numA - numB
+      } else {
+        return a.localeCompare(b)
+      }
+    })
 
     if (!alphabeticalOrder) {
       sortedLines.reverse()
