@@ -2,7 +2,7 @@ var test = require('tape')
 var bashEmulator = require('../../src')
 
 test('sort', function (t) {
-  t.plan(9)
+  t.plan(15)
 
   var emulator = bashEmulator({
     workingDirectory: '/',
@@ -69,19 +69,74 @@ jack 7800`
     t.equal(output, res, 'sort with file input (remove duplicate & reverse order)')
   })
 
-  emulator.run('sort -k2 noms_salaries.txt').then(function (output) {
-    var res = `daniel 3150
-alice 7200
-bob 4800
+  emulator.run('sort -k2 salary.txt').then(function (output) {
+    var res = `frank 10000
+daniel 3150
 irene 4300
+bob 4800
 hannah 5500
 eve 6700
+alice 7200
 jack 7800
-george 9999
 claire 9100
-frank 10000
+george 9999
 `
     t.equal(output, res, 'sort with file input (sort by second column - salaries)')
+  })
+
+  emulator.run('sort -k 2 salary.txt').then(function (output) {
+    const expected = `frank 10000
+daniel 3150
+irene 4300
+bob 4800
+hannah 5500
+eve 6700
+alice 7200
+jack 7800
+claire 9100
+george 9999
+`
+    t.equal(output, expected, 'sort with -k 2 (same as -k2)')
+  })
+
+  emulator.run('sort -k2n salary.txt').then(function (output) {
+    var res = `daniel 3150
+irene 4300
+bob 4800
+hannah 5500
+eve 6700
+alice 7200
+jack 7800
+claire 9100
+george 9999
+frank 10000
+`
+    t.equal(output, res, 'sort with -k2n (sort by second column)')
+  })
+
+  emulator.run('sort -k2nr salary.txt').then(function (output) {
+    var res = `frank 10000
+george 9999
+claire 9100
+jack 7800
+alice 7200
+eve 6700
+hannah 5500
+bob 4800
+irene 4300
+daniel 3150
+`
+    t.equal(output, res, 'sort with -k2nr (sort by second column)')
+  })
+
+  emulator.run('sort -k salary.txt').then(null, function (err) {
+    var res = `sort: -k must be followed by a column number\n`
+    t.equal(err, res, 'sort with -k but no number')
+  })
+
+  emulator.run('sort -kn salary.txt').then(null, function (err) {
+    var res = `sort: -k must be followed by a column number\n`
+    t.equal(err, res, 'sort with -k but no number')
   })
 
   emulator.run('sort -r nofile.txt').then(null, function (err) {
@@ -91,5 +146,20 @@ frank 10000
   emulator.run('sort -x noms.txt').then(null, function (err) {
     var res = 'sort: invalid option -x\n'
     t.equal(err, res, 'sort fails with unknown option')
+  })
+
+  emulator.run('sort -k 2nr salary.txt').then(function (output) {
+    const expected = `frank 10000
+george 9999
+claire 9100
+jack 7800
+alice 7200
+eve 6700
+hannah 5500
+bob 4800
+irene 4300
+daniel 3150
+`
+    t.equal(output, expected, 'sort with -k 2nr (separate)')
   })
 })

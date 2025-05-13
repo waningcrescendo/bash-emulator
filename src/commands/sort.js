@@ -64,13 +64,6 @@ function sort (env, args) {
       removeDuplicates = true
     } else if (f === '-n') {
       numericSort = true
-    } else if (f.startsWith('-k')) {
-      const colArg = f.slice(2)
-      console.log('colArg: ', colArg)
-      if (colArg) {
-        columnIndex = parseInt(colArg) - 1
-        console.log('columnindex: ', columnIndex)
-      }
     } else {
       exitCode = 1
       env.error('sort: invalid option ' + f + '\n')
@@ -79,15 +72,14 @@ function sort (env, args) {
     }
   })
 
-  function extractNumberFromColumn (line, columnIndex) {
-    const columns = line.split(/\s+/)
-    console.log('line: ', line, ' column index: ', columnIndex)
-    if (columns[columnIndex]) {
-      const match = columns[columnIndex].match(/[\d\.\-]+/)
-      console.log('match? ', match)
-      return match ? parseFloat(match[0]) : NaN
-    }
-    return NaN
+  function extractField (line, columnIndex) {
+    const cols = line.trim().split(/\s+/)
+    return cols[columnIndex] || ''
+  }
+
+  function extractNumber (line, columnIndex) {
+    const m = extractField(line, columnIndex).match(/[\d\.\-]+/)
+    return m ? parseFloat(m[0]) : NaN
   }
 
   function processLines (lines) {
@@ -95,14 +87,11 @@ function sort (env, args) {
 
     var sortedLines = lines.sort(function (a, b) {
       if (numericSort) {
-        console.log('numeric sort true')
-        const numA = extractNumberFromColumn(a, columnIndex)
-        const numB = extractNumberFromColumn(b, columnIndex)
-        console.log('numA: ', numA, ' numB: ', numB)
-        return numA - numB
+        return extractNumber(a, columnIndex) - extractNumber(b, columnIndex)
       } else {
-        console.log('numeric sort false')
-        return a.localeCompare(b)
+        return extractField(a, columnIndex).localeCompare(
+                 extractField(b, columnIndex)
+               )
       }
     })
 
