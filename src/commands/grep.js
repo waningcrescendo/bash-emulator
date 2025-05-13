@@ -1,4 +1,4 @@
-var addLineNumber = require('../utils/lineNumber').addLineNumber
+var lineNumber = require('../utils/lineNumber')
 
 function grep (env, args) {
   // Ignore command name
@@ -24,18 +24,20 @@ function grep (env, args) {
     if (f === '-n') {
       showNumbers = true
       console.log('showNumbers is true')
-    }
-    if (f === '-v') {
+    } else if (f === '-v') {
       invertMatch = true
       console.log('invertmatch is true')
-    }
-    if (f === '-i') {
+    } else if (f === '-i') {
       ignoreCase = true
       console.log('ignorecase is true')
-    }
-    if (f === '-c') {
+    } else if (f === '-c') {
       countOnly = true
       console.log('countonly is true')
+    } else {
+      exitCode = 1
+      env.error('grep: invalid option ' + f + '\n')
+      env.exit(exitCode)
+      return
     }
   })
 
@@ -66,7 +68,7 @@ function grep (env, args) {
         if (!countOnly) {
           var out = line
           if (showNumbers) {
-            out = addLineNumber(6, idx + 1, out)
+            out = lineNumber.addLineNumber(6, idx + 1, out)
           }
           if (prefix) {
             out = prefix + ':' + out
