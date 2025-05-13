@@ -2,7 +2,7 @@ var test = require('tape')
 var bashEmulator = require('../../src')
 
 test('sort', function (t) {
-  t.plan(15)
+  t.plan(16)
 
   var emulator = bashEmulator({
     workingDirectory: '/',
@@ -40,6 +40,11 @@ jack 7800`
   })
 
   emulator.run('sort noms.txt').then(function (output) {
+    var res = 'alfred\nbruce\npenguin\nselina\nsphinx\n'
+    t.equal(output, res, 'sort with file input (alphabetical order)')
+  })
+
+  emulator.run('sort -k2 noms.txt').then(function (output) {
     var res = 'alfred\nbruce\npenguin\nselina\nsphinx\n'
     t.equal(output, res, 'sort with file input (alphabetical order)')
   })

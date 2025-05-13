@@ -74,7 +74,11 @@ function sort (env, args) {
 
   function extractField (line, columnIndex) {
     const cols = line.trim().split(/\s+/)
-    return cols[columnIndex] || ''
+    if (columnIndex < cols.length) {
+      return cols[columnIndex]
+    } else {
+      return cols[0]
+    }
   }
 
   function extractNumber (line, columnIndex) {
