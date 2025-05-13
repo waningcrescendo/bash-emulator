@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 function sort (env, args) {
   // Ignore command name
   args.shift()
@@ -13,12 +14,48 @@ function sort (env, args) {
   while (args[0] && args[0].startsWith('-')) {
     var flag = args.shift()
     for (var i = 1; i < flag.length; i++) {
-      flags.push('-' + flag[i])
+      const c = flag[i]
+      if (c === 'k') {
+        const rest = flag.slice(i + 1)
+        if (rest) {
+          const match = rest.match(/^(\d+)(.*)$/)
+          if (match) {
+            columnIndex = parseInt(match[1], 10) - 1
+            const remainingFlags = match[2]
+            for (const extra of remainingFlags) {
+              flags.push('-' + extra)
+            }
+            break
+          } else {
+            env.error('sort: -k must be followed by a column number\n')
+            env.exit(1)
+            return
+          }
+        } else {
+          const next = args[0]
+          if (next && /^\d+([a-z]*)$/.test(next)) {
+            args.shift()
+            const match = next.match(/^(\d+)([a-z]*)$/)
+            columnIndex = parseInt(match[1], 10) - 1
+            for (const extra of match[2]) {
+              flags.push('-' + extra)
+            }
+          } else {
+            env.error('sort: -k must be followed by a column number\n')
+            env.exit(1)
+            return
+          }
+        }
+        break
+      } else {
+        flags.push('-' + c)
+      }
     }
   }
 
     // flag interpretation
   flags.forEach(function (f) {
+    console.log('flags ', flags)
     if (f === '-r') {
       // default: alphabetical order
       alphabeticalOrder = false
@@ -29,8 +66,10 @@ function sort (env, args) {
       numericSort = true
     } else if (f.startsWith('-k')) {
       const colArg = f.slice(2)
+      console.log('colArg: ', colArg)
       if (colArg) {
         columnIndex = parseInt(colArg) - 1
+        console.log('columnindex: ', columnIndex)
       }
     } else {
       exitCode = 1
@@ -42,9 +81,10 @@ function sort (env, args) {
 
   function extractNumberFromColumn (line, columnIndex) {
     const columns = line.split(/\s+/)
+    console.log('line: ', line, ' column index: ', columnIndex)
     if (columns[columnIndex]) {
-      // eslint-disable-next-line no-useless-escape
       const match = columns[columnIndex].match(/[\d\.\-]+/)
+      console.log('match? ', match)
       return match ? parseFloat(match[0]) : NaN
     }
     return NaN
@@ -55,10 +95,13 @@ function sort (env, args) {
 
     var sortedLines = lines.sort(function (a, b) {
       if (numericSort) {
+        console.log('numeric sort true')
         const numA = extractNumberFromColumn(a, columnIndex)
         const numB = extractNumberFromColumn(b, columnIndex)
+        console.log('numA: ', numA, ' numB: ', numB)
         return numA - numB
       } else {
+        console.log('numeric sort false')
         return a.localeCompare(b)
       }
     })
