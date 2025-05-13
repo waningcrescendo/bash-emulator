@@ -90,13 +90,18 @@ function sort (env, args) {
     lines = lines.filter(line => line.trim() !== '')
 
     var sortedLines = lines.sort(function (a, b) {
-      if (numericSort) {
-        return extractNumber(a, columnIndex) - extractNumber(b, columnIndex)
-      } else {
-        return extractField(a, columnIndex).localeCompare(
-                 extractField(b, columnIndex)
-               )
-      }
+      console.log(numericSort)
+      console.log('numeric sort ', extractNumber(a, columnIndex) - extractNumber(b, columnIndex))
+      // if (numericSort) {
+      //   console.log('numeric sort ', extractNumber(a, columnIndex) - extractNumber(b, columnIndex))
+      //   if (!extractNumber(a, columnIndex) - extractNumber(b, columnIndex).isNaN) {
+      //     return extractNumber(a, columnIndex) - extractNumber(b, columnIndex)
+      //   }
+      // } else {
+      return extractField(a, columnIndex).localeCompare(
+                extractField(b, columnIndex)
+              )
+      // }
     })
 
     if (!alphabeticalOrder) {
@@ -107,6 +112,7 @@ function sort (env, args) {
         return index === 0 || line !== arr[index - 1]
       })
     }
+    console.log('sort normally')
     sortedLines.forEach(function (line) {
       env.output(line + '\n')
     })
